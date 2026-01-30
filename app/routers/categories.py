@@ -11,9 +11,11 @@ router = APIRouter(
     tags=["categories"],
 )
 
-@router.get("/")
-async def get_all_categories():
-    return {"message": "Список всех категорий (заглушка)"}
+@router.get("/", response_model=list[CategorySchema])
+async def get_all_categories(db: Session = Depends(get_db)):
+    stmt = select(CategoryModel).where(CategoryModel.is_active == True)
+    categories = db.scalars(stmt).all()
+    return categories
 
 
 @router.post("/", response_model=CategorySchema, status_code=status.HTTP_201_CREATED)
