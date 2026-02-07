@@ -67,7 +67,7 @@ class UserCreate(BaseModel):
 class UserRoleUpdate(BaseModel):
     role: str = Field(pattern="^(buyer|seller|admin)$", description="Новая роль")
 
-    
+
 class User(BaseModel):
     id: int
     email: EmailStr
@@ -75,3 +75,7 @@ class User(BaseModel):
     role: str
     
     model_config = ConfigDict(from_attributes=True)
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
