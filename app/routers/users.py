@@ -7,7 +7,7 @@ from app.models.users import User as UserModel
 from app.schemas import UserCreate, UserRoleUpdate, User as UserSchema
 from app.db_depends import get_async_db
 from app.auth import hash_password, verify_password, create_access_token
-from app.auth import get_current_admin
+from app.auth import get_current_admin, create_refresh_token
 
 router = APIRouter(
     prefix="/users",
@@ -44,7 +44,8 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(),
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(data={"sub": user.email, "role": user.role, "id": user.id})
-    return {"access_token": access_token, "token_type": "bearer"}
+    refresh_token = create_refresh_token(data={"sub": user.email, "role": user.role, "id": user.id})
+    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 
 @router.post("/admin", response_model=UserSchema, status_code=status.HTTP_201_CREATED)
