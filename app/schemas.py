@@ -64,6 +64,10 @@ class UserCreate(BaseModel):
                       description="Роль: 'buyer' или 'seller'")
 
 
+class UserRoleUpdate(BaseModel):
+    role: str = Field(pattern="^(buyer|seller|admin)$", description="Новая роль")
+
+    
 class User(BaseModel):
     id: int
     email: EmailStr
