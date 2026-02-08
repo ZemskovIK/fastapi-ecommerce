@@ -11,6 +11,7 @@ from app.auth import hash_password, verify_password, create_access_token
 from app.auth import get_current_admin, create_refresh_token
 from app.config import SECRET_KEY, ALGORITHM
 
+
 router = APIRouter(
     prefix="/users",
     tags=["users"]

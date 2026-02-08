@@ -11,10 +11,12 @@ from app.auth import get_current_admin
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db_depends import get_async_db
 
+
 router = APIRouter(
     prefix="/categories",
     tags=["categories"],
 )
+
 
 @router.get("/", response_model=list[CategorySchema])
 async def get_all_categories(db: AsyncSession = Depends(get_async_db)):

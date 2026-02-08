@@ -12,10 +12,12 @@ from app.auth import get_current_seller
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db_depends import get_async_db
 
+
 router = APIRouter(
     prefix="/products",
     tags=["products"],
 )
+
 
 @router.get("/", response_model=list[ProductSchema])
 async def get_all_products(db: AsyncSession = Depends(get_async_db)):
