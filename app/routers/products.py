@@ -11,7 +11,7 @@ from app.auth import get_current_seller
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db_depends import get_async_db
-
+from datetime import datetime
 
 router = APIRouter(
     prefix="/products",
@@ -33,6 +33,7 @@ async def get_all_products(
             None, description="true — только товары в наличии, false — только без остатка"),
         seller_id: int | None = Query(
             None, description="ID продавца для фильтрации"),
+        created_at: datetime = Query(description="Дата и время создания записи"),
         db: AsyncSession = Depends(get_async_db),
 ):
     if min_price is not None and max_price is not None and min_price > max_price:
@@ -51,6 +52,8 @@ async def get_all_products(
         filters.append(ProductModel.stock > 0 if in_stock else ProductModel.stock == 0)
     if seller_id is not None:
         filters.append(ProductModel.seller_id == seller_id)
+    if created_at is not None:
+        filters.append(ProductModel.created_at >= created_at)
 
     total_stmt = select(func.count()).select_from(ProductModel).where(*filters)
     total = await db.scalar(total_stmt) or 0
