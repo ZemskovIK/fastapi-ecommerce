@@ -32,7 +32,7 @@ API интернет-магазина на FastAPI с аутентификаци
 1. Клонируйте репозиторий:
 ```bash
 git clone https://github.com/ZemskovIK/fastapi-ecommerce.git
-cd fastapi_ecommerce
+cd fastapi-ecommerce
 ```
 
 2. Создайте виртуальное окружение и установите зависимости:
@@ -47,7 +47,7 @@ pip install -r requirements.txt
 
 Создайте файл `.env` на основе `.env.example`:
 ```env
-DATABASE_URL=postgresql+asyncpg://user:password@localhost/fastapi_ecommerce
+DATABASE_URL="postgresql+asyncpg://username:password@host:port/database"
 SECRET_KEY=ваш_секретный_ключ
 ```
 
