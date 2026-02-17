@@ -140,7 +140,8 @@ async def get_all_products(
 
 @router.post("/", response_model=ProductSchema, status_code=status.HTTP_201_CREATED)
 async def create_product(
-    product: ProductCreate,
+    product: ProductCreate = Depends(ProductCreate.as_form),
+    image: UploadFile | None = File(None),
     db: AsyncSession = Depends(get_async_db),
     current_user: UserModel = Depends(get_current_seller)
 ):
@@ -151,8 +152,15 @@ async def create_product(
     if not category:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Category not found or inactive")
+    
+    image_url = await save_product_image(image) if image else None
 
-    db_product = ProductModel(**product.model_dump(), seller_id=current_user.id)
+    db_product = ProductModel(
+        **product.model_dump(),
+        seller_id=current_user.id,
+        image_url=image_url,
+    )
+
     db.add(db_product)
     await db.commit()
     await db.refresh(db_product)
@@ -198,7 +206,8 @@ async def get_product(product_id: int, db: AsyncSession = Depends(get_async_db))
 @router.put("/{product_id}", response_model=ProductSchema)
 async def update_product(
     product_id: int,
-    product: ProductCreate,
+    product: ProductCreate = Depends(ProductCreate.as_form),
+    image: UploadFile | None = File(None),
     db: AsyncSession = Depends(get_async_db),
     current_user: UserModel = Depends(get_current_seller)
 ):
@@ -223,6 +232,11 @@ async def update_product(
         .where(ProductModel.id == product_id)
         .values(**product.model_dump())
     )
+
+    if image:
+        remove_product_image(db_product.image_url)
+        db_product.image_url = await save_product_image(image)
+
     await db.commit()
     await db.refresh(db_product)
     return db_product
@@ -253,6 +267,8 @@ async def delete_product(
                             detail="Category not found or inactive")
     
     product.is_active = False
+    remove_product_image(product.image_url)
+    
     await db.commit()
     await db.refresh(product)
     return product
