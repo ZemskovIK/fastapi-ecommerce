@@ -11,6 +11,8 @@ from yookassa.domain.notification import WebhookNotification
 
 from app.db_depends import get_async_db
 from app.models.orders import Order as OrderModel
+from app.models.users import User as UserModel
+from app.auth import get_current_user
 
 router = APIRouter(
     prefix="/payments",
@@ -98,3 +100,41 @@ async def yookassa_webhook(
 
     await db.commit()
     return {"status": "ok"}
+
+
+@router.get("/{order_id}/status")
+async def get_order_status(
+    order_id: int,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    result = await db.scalars(
+        select(OrderModel).where(OrderModel.id == order_id)
+    )
+    order = result.first()
+
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found"
+        )
+
+    if order.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not allowed to access this order"
+        )
+
+    if order.status == "paid":
+        message = f"Спасибо! Заказ #{order.id} оплачен. Ожидайте доставку."
+    elif order.status in ["canceled", "failed"]:
+        message = "Оплата не прошла. Попробуйте ещё раз."
+    else:
+        message = "Оплата в процессе..."
+
+    return {
+        "order_id": order.id,
+        "status": order.status,
+        "paid_at": order.paid_at if order.paid_at else None,
+        "message": message,
+    }
