@@ -30,7 +30,7 @@ async def _load_order_with_items(db: AsyncSession, order_id: int) -> OrderModel 
     return result.first()
 
 
-@router.post("/checkout", response_model=OrderSchema, status_code=status.HTTP_201_CREATED)
+@router.post("/checkout", response_model=OrderCheckoutResponse, status_code=status.HTTP_201_CREATED)
 async def checkout_order(
     db: AsyncSession = Depends(get_async_db),
     current_user: UserModel = Depends(get_current_user),
